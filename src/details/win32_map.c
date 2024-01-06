@@ -27,7 +27,7 @@ bool_t
                 if (!root)                       return false_t;
                 if (trait_of(root) != sm_root_t) return false_t;
 
-                if (size & mask(11))             return false_t;
+                if (size & mask(11ull))          return false_t;
                 if (size < 4 kb)                 return false_t;
 
                 par_map->root_pos = root_pos ;
@@ -40,6 +40,8 @@ bool_t
                 par_map->mem_size = shr(size, 6);
                 for (u64_t i = 0 ; i < 64 ; ++i)       {
                     par_map->mem[i] = map              ;
+                    par_map->mem[i]->map     = par_map ;
+                    par_map->mem[i]->map_pos = i       ;
                     map            += par_map->mem_size;
                 }
 
@@ -55,11 +57,13 @@ bool_t
             if (size < 4 kb)     size = 4 kb   ;
 
             map      = VirtualAlloc (0, size, MEM_COMMIT, PAGE_READWRITE); if (!map) return false_t;
-            mem_size = shr(size, 6)                                      ;
+            mem_size = shr(size, 6ull)                                   ;
 
             par_map->map = map;
-            for (u64_t i = 0 ; i < 64 ; ++i) {
-                par_map->mem[i] = map     ;
+            for (u64_t i = 0 ; i < 64 ; ++i)      {
+                par_map->mem[i]          = map    ;
+                par_map->mem[i]->map     = par_map;
+                par_map->mem[i]->map_pos = i      ;
                 map            += mem_size;
             }
 
@@ -116,16 +120,16 @@ sm_mem*
 
 void
     sm_map_free
-        (sm_map* par, sm_mem* par_free)          {
-            if (!par)                      return;
-            if (!par_free)                 return;
+        (sm_map* par, sm_mem* par_free)           {
+            if (!par)                       return;
+            if (!par_free)                  return;
             
-            if (trait_of(par) != sm_map_t) return;
-            if (par_free->map != par)      return; u64_t pos = par_free->map_pos;
+            if (trait_of(par) != sm_map_t)  return;
+            if (par_free->map != par)       return; u64_t pos = par_free->map_pos;
             
-            if (pos > 63)                  return;
-            if (par->mask & shl(1, pos))   return; 
-            if (!par->mask)                      {
+            if (pos > 63)                   return;
+            if (par->mask & shl(1ull, pos)) return;
+            if (!par->mask)                       {
                 u64_t    root_pos = par->root_pos;
                 sm_root* root     = par->root    ;
 

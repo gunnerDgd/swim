@@ -63,8 +63,8 @@ bool_t
             else if (par_count == 1) size = va_arg(par, u64_t);
             else                     return false_t           ;
 
-            if (size < (256 kb)) size = 256 kb ;
-            if (size & mask(18)) return false_t;
+            if (size < (256 kb))    size = 256 kb ;
+            if (size & mask(18ull)) return false_t;
 
             for (u64_t i = 0 ; i < 6 ; ++i)                                                  {
                 sm_root* root = VirtualAlloc (0, sizeof(sm_root), MEM_COMMIT, PAGE_READWRITE);
